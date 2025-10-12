@@ -24,10 +24,14 @@
 	},
 	"dependencies": {
 		"@neondatabase/serverless": "^1.0.2",
+<<<<<<< HEAD
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"arktype": "^2.1.22",
+=======
+		"argon2": "^0.44.0",
+>>>>>>> d16d17badebdd4533a7f07538d8383b97a78f43c
 		"dotenv": "^17.2.3",
 		"drizzle-orm": "^0.44.6"
 	}

@@ -1,8 +1,6 @@
 <script>
-    import Navbar from '$lib/components/navbar.svelte';
-</script>
 
-<Navbar />
+</script>
 
 <body>
     <div class="container">
