@@ -2,7 +2,7 @@
 
 </script>
 
-<body>
+<main>
     <div class="container">
         <div class="header">
             <div class="header-text">
@@ -14,10 +14,10 @@
             <p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
         </div>
     </div>
-</body>
+	</main>
 
 <style>
-    body {
+    main {
         background-image: linear-gradient(#000000, #0c0c0c);
         background-repeat: no-repeat;
         min-height: 100vh;
