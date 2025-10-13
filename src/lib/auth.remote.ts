@@ -1,8 +1,8 @@
 import { hash, verify } from "@node-rs/argon2";
 import { form, getRequestEvent, query } from "$app/server";
 import { type } from "arktype";
-import { db } from "./db";
-import { sessionsTable, usersTable } from "./schemas";
+import { db } from "./server/db";
+import { sessionsTable, usersTable } from "./server/schemas";
 import { eq } from "drizzle-orm";
 import { fail, redirect, type RequestEvent } from "@sveltejs/kit";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
