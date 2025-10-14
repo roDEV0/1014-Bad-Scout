@@ -29,6 +29,8 @@
 		"@oslojs/encoding": "^1.1.0",
 		"arktype": "^2.1.22",
 		"dotenv": "^17.2.3",
-		"drizzle-orm": "^0.44.6"
+		"drizzle-orm": "^0.44.6",
+		"tbarequest": "^0.2.0",
+		"valibot": "^1.1.0"
 	}
 }
