@@ -6,8 +6,8 @@ export const usersTable = pgTable("users", {
     passwordHashed: text('passwordHashed').notNull(),
     firstName: varchar('firstname', {length: 256}).notNull(),
     lastInitial: varchar('lastInitial', {length: 1}).notNull(),
-    score: integer('score').default(0),
-		verified: boolean().default(false)
+    score: integer('score').default(0).notNull(),
+		verified: boolean().default(false).notNull()
 });
 
 export const sessionsTable = pgTable("sessions", {
