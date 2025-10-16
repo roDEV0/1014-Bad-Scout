@@ -1,4 +1,5 @@
-import { integer, pgTable, varchar, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, text, timestamp, boolean, json, date } from "drizzle-orm/pg-core";
+import { relations } from 'drizzle-orm';
 
 export const usersTable = pgTable("users", {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
@@ -16,18 +17,22 @@ export const sessionsTable = pgTable("sessions", {
     expiresAt: timestamp('expiresAt').notNull(),
 });
 
-export const formsTable = pgTable("forms", {
+export const pollSubmissionsTable = pgTable("submissions", {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-    team: integer('team').notNull(),
     author: integer('author').references(() => usersTable.id).notNull(),
-    formData: integer('formData').references(() => formDataTable.id).notNull(),
-})
+    submitted: date('submitted').notNull(),
+});
 
-export const formDataTable = pgTable("formData", {
+export const questionSubmissionsTable = pgTable("question_submissions", {
     id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-    driveTrain: text('driveTrain'),
-    driveAbility: text('driveAbility'),
-    malfunctions: text('malfunctions'),
-    other: text('general'),
-    overall: text('overall'),
-})
+    questionAnswer: json('answer').notNull(),
+    question: integer('question').references(() => questionsTable.id).notNull(),
+    submissionID: integer('submissionID').references(() => pollSubmissionsTable.id).notNull(),
+});
+
+export const questionsTable = pgTable("questions", {
+    id: integer('id').notNull().primaryKey(),
+    year: integer('year').notNull(),
+    question: text('question').notNull(),
+    answerFormat: varchar('answer_format', {length: 256}).notNull(),
+});
