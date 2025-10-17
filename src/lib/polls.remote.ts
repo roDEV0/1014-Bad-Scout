@@ -2,12 +2,14 @@ import { pollSubmissionsTable, questionSubmissionsTable, questionsTable, usersTa
 import { db } from "./server/db";
 import { query, form, getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit'
-import { verifyUser } from './auth.remote.ts';
+import { verifyUserExists, verifyUser } from './auth.remote.ts';
 import { type } from 'arktype';
 import { eq } from 'drizzle-orm'
 import { randomUUID } from 'crypto';
 
 export const getQuestionProperties = query(type("string.integer"), async (QID) => {
+    verifyUser();
+
     const question = (await db.select().from(questionsTable).where(eq(questionsTable.id, Number(QID))));
     if (!question) return null;
 
@@ -18,6 +20,8 @@ export const getQuestionProperties = query(type("string.integer"), async (QID) =
     };
 })
 
+// Turns out these have to be queries, not forms... That's for future me though
+
 export const createPollSubmission = form(
     type({
         id: "number",
@@ -25,6 +29,8 @@ export const createPollSubmission = form(
         submitted: "string.date",
     }),
     async ({ id, author, submitted}) => {
+        verifyUser();
+
         const user = (await db.select().from(usersTable).where(eq(usersTable.id, author)));
 
         if (!user) return error(400, "Invalid author for poll submission");
@@ -38,28 +44,26 @@ export const createPollSubmission = form(
         return submission[0];
     });
 
-// TODO: Weird issue where it doesn't like passing in JSON objects
+export const createQuestionSubmission = form(type({
+        id: "number",
+        questionAnswer: "string",
+        question: "number",
+        submissionID: "number",
+    }),
+    async ({ id, questionAnswer, question, submissionID }) => {
+        verifyUser();
 
-// export const createQuestionSubmission = form(
-//     type({
-//         id: "number",
-//         questionAnswer: "object",
-//         question: "number",
-//         submissionID: "number",
-//     }),
-//     async ({ id, questionAnswer, question, submissionID}) => {
-//         const questionReference = (await db.select().from(questionsTable).where(eq(questionsTable.id, Number(question))));
-//         const submissionReference = (await db.select().from(pollSubmissionsTable).where(eq(pollSubmissionsTable.id, Number(submissionID))));
-//
-//         if (!questionReference || !questionReference[0] || !submissionReference || !submissionReference[0])
-//             return error(400, "Invalid Submission ID or Question ID");
-//
-//         const questionSubmission = await db.insert(questionSubmissionsTable).values({
-//             questionAnswer: questionAnswer,
-//             question: question,
-//             submissionID: submissionID
-//         }).returning();
-//
-//         return questionSubmission[0];
-//     }
-// );
+        let parsedAnswer;
+        try { parsedAnswer = JSON.parse(questionAnswer) } catch (problem) { return error(400, "Invalid format for question answer"); }
+        if (!(await db.select().from(questionsTable).where(eq(questionsTable.id, question)))) return error(400, "Invalid question ID");
+        if (!(await db.select().from(questionSubmissionsTable).where(eq(questionSubmissionsTable.id, submissionID)))) return error(400, "Invalid submission ID");
+
+        const submission = await db.insert(questionSubmissionsTable).values({
+            questionAnswer: parsedAnswer,
+            question: question,
+            submissionID: submissionID
+        }).returning();
+
+        return submission[0];
+    }
+)
