@@ -4,23 +4,19 @@ import { query, form, getRequestEvent } from '$app/server';
 import { error } from '@sveltejs/kit'
 import { verifyUserExists, verifyUser } from './auth.remote.ts';
 import { type } from 'arktype';
-import { eq } from 'drizzle-orm'
-import { randomUUID } from 'crypto';
+import { eq, inArray } from 'drizzle-orm'
 
-export const getQuestionProperties = query(type("string.integer"), async (QID) => {
+// This might be the worst code I've ever written
+export const getQuestionProperties = query.batch(type("number"), async (questions) => {
     verifyUser();
 
-    const question = (await db.select().from(questionsTable).where(eq(questionsTable.id, Number(QID))));
-    if (!question) return null;
+    let questionArray = questions.map(Number);
 
-    return {
-        year: question[0].year,
-        question: question[0].question,
-        answerFormat: question[0].answerFormat,
-    };
+    const questionReturn = await db.select().from(questionsTable).where(inArray(questionsTable.id, questionArray));
+    const mappedQuestions = new Map(questionReturn.map(q => [q.id, q]))
+
+    return (question) => mappedQuestions.get(question)
 })
-
-// Turns out these have to be queries, not forms... That's for future me though
 
 export const createPollSubmission = form(
     type({
@@ -45,25 +41,29 @@ export const createPollSubmission = form(
     });
 
 export const createQuestionSubmission = form(type({
-        id: "number",
-        questionAnswer: "string",
-        question: "number",
-        submissionID: "number",
-    }),
-    async ({ id, questionAnswer, question, submissionID }) => {
+        submissions: {
+            id: "number",
+            questionAnswer: "string",
+            question: "number",
+            submissionID: "number",
+    }}),
+    async (submissionRequest) => {
         verifyUser();
 
-        let parsedAnswer;
-        try { parsedAnswer = JSON.parse(questionAnswer) } catch (problem) { return error(400, "Invalid format for question answer"); }
-        if (!(await db.select().from(questionsTable).where(eq(questionsTable.id, question)))) return error(400, "Invalid question ID");
-        if (!(await db.select().from(questionSubmissionsTable).where(eq(questionSubmissionsTable.id, submissionID)))) return error(400, "Invalid submission ID");
+        let submissionList = [];
+        for (const submission of [submissionRequest.submissions]) {
+            let parsedAnswer;
+            try { parsedAnswer = JSON.parse(submission.questionAnswer) } catch (problem) { return error(400, "Invalid format for question answer"); }
+            if (!(await db.select().from(questionsTable).where(eq(questionsTable.id, submission.question)))) return error(400, "Invalid question ID");
+            if (!(await db.select().from(questionSubmissionsTable).where(eq(questionSubmissionsTable.id, submission.submissionID)))) return error(400, "Invalid submission ID");
 
-        const submission = await db.insert(questionSubmissionsTable).values({
-            questionAnswer: parsedAnswer,
-            question: question,
-            submissionID: submissionID
-        }).returning();
+            submissionList.push({
+                questionAnswer: parsedAnswer,
+                question: submission.question,
+                submissionID: submission.submissionID,
+            })
+        }
 
-        return submission[0];
+        return db.insert(questionSubmissionsTable).values(submissionList).returning();
     }
 )
