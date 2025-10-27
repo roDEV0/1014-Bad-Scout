@@ -1,6 +1,6 @@
 import { pollSubmissionsTable, questionSubmissionsTable, questionsTable, usersTable } from "$lib/server/schemas.ts";
 import { db } from "./server/db";
-import { query, form, getRequestEvent } from '$app/server';
+import { query, form, getRequestEvent, prerender } from '$app/server';
 import { error } from '@sveltejs/kit'
 import { verifyUserExists, verifyUser } from './auth.remote.ts';
 import { type } from 'arktype';
@@ -8,11 +8,10 @@ import { eq, inArray } from 'drizzle-orm'
 
 // This might be the worst code I've ever written
 export const getQuestionProperties = query.batch(type("number"), async (questions) => {
-    verifyUser();
+    await verifyUser();
 
-    let questionArray = questions.map(Number);
+    const questionReturn = await db.select().from(questionsTable).where(inArray(questionsTable.id, questions));
 
-    const questionReturn = await db.select().from(questionsTable).where(inArray(questionsTable.id, questionArray));
     const mappedQuestions = new Map(questionReturn.map(q => [q.id, q]))
 
     return (question) => mappedQuestions.get(question)
@@ -67,3 +66,8 @@ export const createQuestionSubmission = form(type({
         return db.insert(questionSubmissionsTable).values(submissionList).returning();
     }
 )
+
+// Use prerender since questions won't change all that much, just remember to redeploy if questions are changed.
+const getQuestions = prerender(async () => {
+	return await db.select().from(questionsTable)
+})

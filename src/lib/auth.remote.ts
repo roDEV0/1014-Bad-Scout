@@ -152,6 +152,16 @@ export const verifyUser = query(async () => {
   return { firstName, lastInitial, email, score };
 });
 
+const verifiedQuery = <T>(fn: () => T) => {
+	return query(async () => {
+		const result = await verifyUserSession();
+    if (!result) return redirect(302, "/login");
+    if (!result.user.verified) return redirect(302, "/unverified");
+
+		return fn();
+	});
+};
+
 async function verifyUserSession() {
   const event = getRequestEvent();
   const token = event.cookies.get("session");
