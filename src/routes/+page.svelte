@@ -1,4 +1,5 @@
 <script>
+    import Poll from '$lib/components/submissions/form.svelte';
 </script>
 
 <main>
@@ -11,6 +12,7 @@
         </div>
         <div class="information-container">
             <p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+            <Poll/>
         </div>
     </div>
 </main>

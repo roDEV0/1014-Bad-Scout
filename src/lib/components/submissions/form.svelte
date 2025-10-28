@@ -1,12 +1,20 @@
 <script lang="ts">
     import { createQuestionSubmission } from '$lib/polls.remote.ts'
-    import { getQuestionProperties } from '$lib/polls.remote.ts'
+    import { getQuestions } from '$lib/polls.remote.ts'
     import { Input } from '$lib/components/ui/input'
+    import { Button } from '$lib/components/ui/button'
     import { Label } from '$lib/components/ui/label'
-    let demoFormat = [10, 20, 30, 40, 50]
+    let demoFormat = [1]
+
+    const questionsMap = new Map((await getQuestions()).map(question => [question.id, question]))
+
 </script>
 
-{#each demoFormat as questionNum}
-    <Label for="question-{questionNum}">{await getQuestionProperties(questionNum).question}</Label>
-    <Input type="text" id="question-{questionNum}" />
-{/each}
+<main>
+    <form {...createQuestionSubmission}>
+        {#each demoFormat as question}
+            <Label class="text-white" for="question-{questionsMap.get(question).id}">{questionsMap.get(question).questionText}</Label>
+            <input class="border text-white" {...createQuestionSubmission.fields.submissions[question].questionAnswer.as("text")} id="question-{questionsMap.get(question).id}"/>
+        {/each}
+    </form>
+</main>

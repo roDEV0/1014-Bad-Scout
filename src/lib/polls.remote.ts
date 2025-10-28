@@ -2,7 +2,7 @@ import { pollSubmissionsTable, questionSubmissionsTable, questionsTable, usersTa
 import { db } from "./server/db";
 import { query, form, getRequestEvent, prerender } from '$app/server';
 import { error } from '@sveltejs/kit'
-import { verifyUserExists, verifyUser } from './auth.remote.ts';
+import { getUser, verifyUser } from './auth.remote.ts';
 import { type } from 'arktype';
 import { eq, inArray } from 'drizzle-orm'
 
@@ -17,49 +17,33 @@ export const getQuestionProperties = query.batch(type("number"), async (question
     return (question) => mappedQuestions.get(question)
 })
 
-export const createPollSubmission = form(
-    type({
-        id: "number",
-        author: "number",
-        submitted: "string.date",
-    }),
-    async ({ id, author, submitted}) => {
+export const createQuestionSubmission = form(type({
+        submissions: [{
+            questionAnswer: "string",
+            questionID: "number",
+    }]}),
+    async (submissionRequest) => {
+        console.log("Submitting!!!!")
+
         verifyUser();
 
-        const user = (await db.select().from(usersTable).where(eq(usersTable.id, author)));
+        // I know the object can be null, it checks on the next line
+        const userColumn = await db.select().from(usersTable).where(eq(usersTable.email, (await getUser()).email))
+        if (!userColumn) return error(400, "Invalid email for poll submission");
 
-        if (!user) return error(400, "Invalid author for poll submission");
-
-        const date = new Date(Date.now()).toISOString().split("T")[0];
-        const submission = await db.insert(pollSubmissionsTable).values({
-            author: author,
-            submitted: date
+        const pollSubmission = await db.insert(pollSubmissionsTable).values({
+            author: userColumn[0].id,
+            submitted: new Date(Date.now()).toISOString().split("T")[0]
         }).returning();
 
-        return submission[0];
-    });
-
-export const createQuestionSubmission = form(type({
-        submissions: {
-            id: "number",
-            questionAnswer: "string",
-            question: "number",
-            submissionID: "number",
-    }}),
-    async (submissionRequest) => {
-        verifyUser();
-
         let submissionList = [];
-        for (const submission of [submissionRequest.submissions]) {
-            let parsedAnswer;
-            try { parsedAnswer = JSON.parse(submission.questionAnswer) } catch (problem) { return error(400, "Invalid format for question answer"); }
-            if (!(await db.select().from(questionsTable).where(eq(questionsTable.id, submission.question)))) return error(400, "Invalid question ID");
-            if (!(await db.select().from(questionSubmissionsTable).where(eq(questionSubmissionsTable.id, submission.submissionID)))) return error(400, "Invalid submission ID");
+        for (const submission of Object.values(submissionRequest.submissions)) {
+            if (!(await db.select().from(questionsTable).where(eq(questionsTable.id, submission.questionID)))) return error(400, "Invalid question ID");
 
             submissionList.push({
-                questionAnswer: parsedAnswer,
-                question: submission.question,
-                submissionID: submission.submissionID,
+                questionAnswer: submission.questionAnswer,
+                questionID: submission.questionID,
+                submissionLink: pollSubmission[0].id
             })
         }
 
@@ -67,7 +51,7 @@ export const createQuestionSubmission = form(type({
     }
 )
 
-// Use prerender since questions won't change all that much, just remember to redeploy if questions are changed.
-const getQuestions = prerender(async () => {
-	return await db.select().from(questionsTable)
+// Use prerender since questions won't change all that much, just remember to redeploy if questions are changed. <--- This could be an issue in deployment
+export const getQuestions = prerender(async () => {
+	return db.select().from(questionsTable)
 })

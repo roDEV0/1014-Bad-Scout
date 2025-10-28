@@ -24,15 +24,14 @@ export const pollSubmissionsTable = pgTable("submissions", {
 });
 
 export const questionSubmissionsTable = pgTable("question_submissions", {
-    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-    questionAnswer: json('answer').notNull(),
-    question: integer('question').references(() => questionsTable.id).notNull(),
-    submissionID: integer('submissionID').references(() => pollSubmissionsTable.id).notNull(),
+    questionAnswer: text('questionAnswer').notNull(),
+    questionID: integer('questionID').references(() => questionsTable.id).notNull(),
+    submissionLink: integer('submissionLink').references(() => pollSubmissionsTable.id).notNull(),
 });
 
 export const questionsTable = pgTable("questions", {
-    id: integer('id').notNull().primaryKey(),
+    id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
     year: integer('year').notNull(),
-    question: text('question').notNull(),
-    answerFormat: varchar('answer_format', {length: 256}).notNull(),
+    questionText: text('questionText').notNull(),
+    answerFormat: varchar('answerFormat', {length: 256}).notNull(),
 });
