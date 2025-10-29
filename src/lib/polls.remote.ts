@@ -29,12 +29,7 @@ export const getQuestionProperties = query.batch(
 );
 
 export const createQuestionSubmission = form(
-  type({
-    submissions: type({
-      questionAnswer: "string",
-      questionID: "number",
-    }).array(),
-  }),
+    type({"[string]": type("string"),}),
   async (submissionRequest) => {
     const user = await verifyUser();
 
@@ -48,10 +43,14 @@ export const createQuestionSubmission = form(
 
     let questions = await getQuestionsId();
 
-		// takes submissions, includes ones withg valid question ids, then adds the submission id to them
-    let submissionList = Object.values(submissionRequest.submissions)
-      .filter((v) => Object.keys(questions).map(Number).includes(v.questionID))
-      .map((v) => ({ ...v, submissionLink: pollSubmission[0].id }));
+		// takes submissions, includes ones with valid question ids, then adds the submission id to them
+  let submissionList = Object.entries(submissionRequest)
+      .filter(([id, answer]) => Object.keys(questions).map(Number).includes(+id))
+      .map(([id, answer]) => ({
+          questionAnswer: answer,
+          questionID: +id,
+          submissionLink: pollSubmission[0].id
+      }));
 
     return db
       .insert(questionSubmissionsTable)

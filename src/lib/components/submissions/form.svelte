@@ -20,17 +20,9 @@
     <!--{/each}-->
     <label>
       <h2>Can you see this?</h2>
-      <input
-        {...createQuestionSubmission.fields.submissions[0].questionAnswer.as(
-          "text",
-        )}
-      />
-
-			<input hidden {...createQuestionSubmission.fields.submissions[0].questionID.as("number")} value={1}>
-
+      <input {...createQuestionSubmission.fields.submissions[0].as("text")}/>
     </label>
 
-
-    <button class="">Submit!</button>
+    <button class="text-white">Submit!</button>
   </form>
 </main>
