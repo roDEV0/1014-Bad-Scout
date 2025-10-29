@@ -148,8 +148,8 @@ export const verifyUser = query(async () => {
   if (!result) return redirect(302, "/login");
   if (!result.user.verified) return redirect(302, "/unverified");
 
-  const { firstName, lastInitial, email, score } = result.user;
-  return { firstName, lastInitial, email, score };
+  const { firstName, lastInitial, email, score, verified, id } = result.user;
+  return { firstName, lastInitial, email, score, verified, id };
 });
 
 const verifiedQuery = <T>(fn: () => T) => {
