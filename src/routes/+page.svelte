@@ -1,20 +1,39 @@
 <script>
     import Poll from '$lib/components/submissions/form.svelte';
+    import Box from '$lib/components/info/infoBlock.svelte';
 </script>
 
 <main>
-    <div class="container">
-        <div class="header">
-            <div class="header-text">
+    <div>
+        <div>
+            <div>
                 <h1>Team 1014 | Easy Scout</h1>
                 <p>Created by Gianmichael R. and Michael K.</p>
             </div>
         </div>
-        <div class="information-container">
-            <p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
-            <Poll/>
+        <div class="grid grid-cols-2 gap-5 w-full content-center p-5">
+            <div class="grid grid-cols-4 gap-5 w-full content-center">
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+                <Box />
+            </div>
+            <Box/>
         </div>
     </div>
+
 </main>
 
 <style>
