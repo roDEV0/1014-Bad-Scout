@@ -1,6 +1,6 @@
 <script>
-    import Poll from '$lib/components/submissions/form.svelte';
-    import Box from '$lib/components/info/infoBlock.svelte';
+    import Poll from "$lib/components/submissions/form.svelte";
+    import Box from "$lib/components/info/infoBlock.svelte";
 </script>
 
 <main>
@@ -30,21 +30,21 @@
                 <Box />
                 <Box />
             </div>
-            <Box/>
+            <Box />
         </div>
     </div>
-
 </main>
 
 <style>
     main {
         background-image: linear-gradient(#000000, #0c0c0c);
         background-repeat: no-repeat;
-        min-height: 100vh;
+
+        /*min-height: 100vh;*/
     }
 
     .container {
-        margin: 8px
+        margin: 8px;
     }
 
     .container .header {
@@ -58,6 +58,4 @@
         background-color: black;
         color: white;
     }
-
 </style>
-
