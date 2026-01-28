@@ -61,7 +61,11 @@ export function guardedQuery<Schema extends StandardSchemaV1, Output>(
   }
 
   // Handle the case where there's no schema parameter (second overload)
-  if (typeof schemaOrFn === "function" && !maybeFn) {
+  if (
+    typeof schemaOrFn === "function" &&
+    !("~standard" in schemaOrFn) &&
+    !maybeFn
+  ) {
     return query(() => {
       const event = getRequestEvent();
       if (!event.locals.user) redirect(302, LOGINPAGE);
@@ -108,7 +112,11 @@ export function adminQuery<Schema extends StandardSchemaV1, Output>(
   }
 
   // Handle the case where there's no schema parameter (second overload)
-  if (typeof schemaOrFn === "function" && !maybeFn) {
+  if (
+    typeof schemaOrFn === "function" &&
+    !("~standard" in schemaOrFn) &&
+    !maybeFn
+  ) {
     return guardedQuery(({ event }) => {
       if (!event.locals.user?.admin) return error(403);
       return schemaOrFn({ user: event.locals.user, event });
@@ -221,7 +229,11 @@ export function guardedForm<
   }
 
   // Handle the case where there's no schema parameter (third overload)
-  if (typeof schemaOrFn === "function" && !maybeFn) {
+  if (
+    typeof schemaOrFn === "function" &&
+    !("~standard" in schemaOrFn) &&
+    !maybeFn
+  ) {
     return form(async () => {
       const event = getRequestEvent();
       if (!event.locals.user) redirect(302, LOGINPAGE);
@@ -282,7 +294,11 @@ export function guardedCommand<Schema extends StandardSchemaV1, Input, Output>(
   }
 
   // Handle the case where there's no schema parameter (second overload)
-  if (typeof schemaOrFn === "function" && !maybeFn) {
+  if (
+    typeof schemaOrFn === "function" &&
+    !("~standard" in schemaOrFn) &&
+    !maybeFn
+  ) {
     return command("unchecked", async (input: Input) => {
       const event = getRequestEvent();
       if (!event.locals.user) return { redirect: LOGINPAGE };
@@ -335,7 +351,11 @@ export function adminCommand<Schema extends StandardSchemaV1, Input, Output>(
   }
 
   // Handle the case where there's no schema parameter (second overload)
-  if (typeof schemaOrFn === "function" && !maybeFn) {
+  if (
+    typeof schemaOrFn === "function" &&
+    !("~standard" in schemaOrFn) &&
+    !maybeFn
+  ) {
     return guardedCommand(async (input: Input, { event }) => {
       if (!event.locals.user?.admin) return {};
       return await schemaOrFn(input, { user: event.locals.user, event });
