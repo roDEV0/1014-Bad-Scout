@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { createQuestionSubmission } from "$lib/polls.remote.ts";
-  import { getQuestions } from "$lib/polls.remote.ts";
-  import { Input } from "$lib/components/ui/input";
-  import { Button } from "$lib/components/ui/button";
   import { Label } from "$lib/components/ui/label";
+  import { createQuestionSubmission, getQuestions } from "$lib/polls.remote.ts";
 
   async function createQuestionMap() {
     return getQuestions();
@@ -19,7 +16,12 @@
         <Label class="text-white" for="question-{question.id}">
           {question.questionText}
         </Label>
-        <input class="border text-white" {...createQuestionSubmission.fields.submissions[question.id].as("text")}/>
+        <input
+          class="border text-white"
+          {...createQuestionSubmission.fields.submissions[question.id].as(
+            "text",
+          )}
+        />
       {/each}
       <button type="submit" class="bg-yellow-500 text-white">Submit!</button>
     </form>

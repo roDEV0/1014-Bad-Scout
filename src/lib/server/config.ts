@@ -1,3 +1,3 @@
 export const validRefUrls = {
-	authTest: "/authtest"
-}
+  authTest: "/authtest",
+};

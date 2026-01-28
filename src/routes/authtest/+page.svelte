@@ -1,11 +1,14 @@
 <script lang="ts">
-  import { logOut, verifyUserExists } from "$lib/auth.remote";
+  import { logOut } from "$lib/auth.remote";
+  import type { PageProps } from "./$types";
 
-	const user = await verifyUserExists();
+  let { data }: PageProps = $props();
 </script>
 
-<h1>Your name is: {user.firstName}</h1>
+<h1>
+  {data.user ? `Your name is ${data.user.name}!` : "You are not logged in!"}
+</h1>
 
 <form {...logOut}>
-	<button>Log out!</button>
+  <button>Log out!</button>
 </form>

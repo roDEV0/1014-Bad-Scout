@@ -13,11 +13,11 @@
     <h2>Password</h2>
     <input {...signUp.fields.password.as("password")} />
   </label>
-	  <label>
+  <label>
     <h2>First Name</h2>
     <input {...signUp.fields.firstName.as("text")} />
   </label>
-	  <label>
+  <label>
     <h2>Last Inital</h2>
     <input {...signUp.fields.lastInitial.as("text")} />
   </label>
