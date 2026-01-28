@@ -1,5 +1,6 @@
 import { command, form, getRequestEvent, query } from "$app/server";
-import type { StandardSchemaV1 } from "@standard-schema/spec";
+import type { StandardSchemaV1 } from "$lib/util/standardSchema";
+
 import {
   error,
   redirect,
