@@ -5,9 +5,8 @@ import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
 import { error, invalid, redirect, type RequestEvent } from "@sveltejs/kit";
 import { type } from "arktype";
 import { eq } from "drizzle-orm";
-import { validRefUrls } from "./server/config";
 import { db } from "./server/db";
-import { adminCommand, guardedForm, guardedQuery } from "./server/guarded";
+import { adminCommand, adminQuery, guardedForm } from "./server/guarded";
 import { sessionsTable, unverifiedUsers, usersTable } from "./server/schemas";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
@@ -40,9 +39,8 @@ export const login = form(
   type({
     email: "string",
     password: "string",
-    "redirect_url?": "string",
   }),
-  async ({ email, password, redirect_url }) => {
+  async ({ email, password }) => {
     // If the schema is not correct at this point, Svelte will return a 400 error. The only cases where we would get this is either us passing wrong data, or someone trying to exploit, where we wouldn't want to give away information.
     const event = getRequestEvent();
     if (event.locals.user) return redirect(303, "/");
@@ -65,12 +63,7 @@ export const login = form(
     // Login sucessful
     await generateSession(user.id, event);
 
-    return redirect(
-      302,
-      redirect_url && Object.values(validRefUrls).includes(redirect_url)
-        ? redirect_url
-        : "/",
-    ); // dont allow mallicious redirect urls
+    return redirect(302, "/"); // dont allow mallicious redirect urls
   },
 );
 
@@ -78,12 +71,16 @@ export const signUp = form(
   type({
     // email that ends with dublinstudents.net
     email: "string.email <= 256 & /^[a-zA-Z0-9._%+-]+@dublinstudents.net$/",
-    password: "string <= 256", // Add max limit so that they can't send GBs worth of data and crash the server. If someone tries to exploit the endpoint in order to create an insure password, who are we to stop them?
+    password: type(
+      "string <= 256",
+      "&",
+      /^(?=(?:[^a-z]*[a-z]){1})(?=(?:[^0-9]*[0-9]){1})(?=.*[!-\/:-@\[-`{-~]).{8,}$/i,
+    ), // Password must have atleast 8 characters, one special character, 1 number, and one letter.
+
     firstName: "string <= 256",
-    lastInitial: "string == 1",
-    "redirect_url?": "string",
+    lastName: "string <= 256",
   }),
-  async ({ email, password, firstName, lastInitial, redirect_url }) => {
+  async ({ email, password, firstName, lastName }) => {
     const event = getRequestEvent();
     if (event.locals.user) return redirect(303, "/");
 
@@ -103,17 +100,14 @@ export const signUp = form(
 
     const user = await db
       .insert(usersTable)
-      .values({ email, firstName, lastInitial, passwordHashed })
+      .values({ email, firstName, lastName, passwordHashed })
       .returning();
+
+    await db.insert(unverifiedUsers).values({ userId: user[0].id });
 
     await generateSession(user[0].id, event);
 
-    return redirect(
-      302,
-      redirect_url && Object.values(validRefUrls).includes(redirect_url)
-        ? redirect_url
-        : "/",
-    );
+    return redirect(302, "/");
   },
 );
 
@@ -129,36 +123,10 @@ export const logOut = guardedForm(async ({ event }) => {
     path: "/",
   });
 
-  return redirect(302, "/login");
+  return redirect(302, "/");
 });
 
-// export const verifyUserExists = query(async () => {
-//     const user = await getUser();
-//     return user ?? redirect(302, "/login");
-// });
-
-// export const verifyUser = query(async () => {
-//     const user = await verifyUserExists();
-//     return user.verified ? user : redirect(302, "/unverified");
-// });
-
-// export const getUser = query(async () => {
-//     const result = await verifyUserSession();
-//     if (!result) return null;
-
-//     const { passwordHashed, ...rest } = result.user;
-//     return rest;
-// });
-
-// export const verifyUserAdmin = query(async () => {
-//     const user = await verifyUser();
-//     return user.admin ? user : error(403);
-// });
-//
-//
-//
-
-export const getUnverifiedUsers = guardedQuery(async (e) => {
+export const getUnverifiedUsers = adminQuery(async (e) => {
   return await db
     .select()
     .from(usersTable)
@@ -172,14 +140,10 @@ export const generateVerificationCode = adminCommand(
     const values = crypto.getRandomValues(new Uint8Array(4));
     let code = Buffer.from(values).toString("hex");
 
-    try {
-      await db.insert(unverifiedUsers).values({ userId, code });
-    } catch (e) {
-      return await db
-        .select()
-        .from(unverifiedUsers)
-        .where(eq(unverifiedUsers.userId, userId));
-    }
+    await db
+      .update(unverifiedUsers)
+      .set({ code })
+      .where(eq(unverifiedUsers.userId, userId));
   },
 );
 

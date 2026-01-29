@@ -1,25 +1,53 @@
-<script>
-  import { page } from "$app/state";
+<script lang="ts">
   import { login } from "$lib/auth.remote";
-
-  const ref = page.url.searchParams.get("ref");
+  import { Button } from "$lib/components/ui/button/index.js";
+  import * as Card from "$lib/components/ui/card/index.js";
+  import {
+    Field,
+    FieldDescription,
+    FieldGroup,
+    FieldLabel,
+  } from "$lib/components/ui/field/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  const id = $props.id();
 </script>
 
-<!--TODO: Add client side check to make sure request follows all requirements -->
-<form
-  {...login.enhance(async ({ submit, data }) => {
-    if (ref) data.redirect_url = ref;
-    await submit();
-  })}
->
-  <h1>Login</h1>
-  <label>
-    <h2>Email</h2>
-    <input {...login.fields.email.as("email")} />
-  </label>
-  <label>
-    <h2>Password</h2>
-    <input {...login.fields.password.as("password")} />
-  </label>
-  <button>Login</button>
-</form>
+<Card.Root class="mx-auto w-full max-w-md mt-20">
+  <Card.Header>
+    <Card.Title class="text-2xl">Login</Card.Title>
+    <Card.Description
+      >Enter your email below to login to your account</Card.Description
+    >
+  </Card.Header>
+  <Card.Content>
+    <form {...login}>
+      <FieldGroup>
+        <Field>
+          <FieldLabel for="email-{id}">Email</FieldLabel>
+          <Input
+            id="email-{id}"
+            placeholder="lastname.num@dublinstudents.net"
+            required
+            {...login.fields.email.as("email")}
+          />
+        </Field>
+        <Field>
+          <div class="flex items-center">
+            <FieldLabel for="password-{id}">Password</FieldLabel>
+          </div>
+          <Input
+            id="password-{id}"
+            required
+            {...login.fields.password.as("password")}
+          />
+        </Field>
+        <Field>
+          <Button type="submit" class="w-full">Login</Button>
+          <FieldDescription class="text-center">
+            Don't have an account? <a href="/signup">Sign up</a>
+          </FieldDescription>
+        </Field>
+      </FieldGroup>
+    </form>
+  </Card.Content>
+</Card.Root>

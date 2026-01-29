@@ -14,7 +14,7 @@ export const usersTable = pgTable("users", {
   email: varchar("email", { length: 256 }).notNull().unique(),
   passwordHashed: text("passwordHashed").notNull(),
   firstName: varchar("firstname", { length: 256 }).notNull(),
-  lastInitial: varchar("lastInitial", { length: 1 }).notNull(),
+  lastName: varchar("lastName", { length: 256 }).notNull(),
   score: integer("score").default(0).notNull(),
   verified: boolean().default(false).notNull(),
   admin: boolean().default(false).notNull(),
@@ -65,5 +65,5 @@ export const unverifiedUsers = pgTable("unverified_users", {
   userId: integer("user_id")
     .references(() => usersTable.id, { onDelete: "cascade" })
     .primaryKey(),
-  code: text().notNull(),
+  code: text(),
 });

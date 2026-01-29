@@ -36,7 +36,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     id: user.id,
     email: user.email,
     name: user.firstName,
-    lastInitial: user.lastInitial,
+    lastName: user.lastName,
     score: user.score,
     verified: user.verified,
     admin: user.admin,

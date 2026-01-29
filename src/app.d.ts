@@ -8,7 +8,7 @@ declare global {
         id: number;
         email: string;
         name: string;
-        lastInitial: string;
+        lastName: string;
         score: number;
         verified: boolean;
         admin: boolean;
