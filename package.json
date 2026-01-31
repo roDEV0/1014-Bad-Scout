@@ -41,6 +41,7 @@
     "arktype": "^2.1.29",
     "drizzle-orm": "^0.45.1",
     "lucide-svelte": "^0.562.0",
+    "sveltekit-sse": "^0.14.3",
     "tbarequest": "^1.2.0"
   }
 }

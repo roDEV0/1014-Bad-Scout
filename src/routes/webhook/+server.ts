@@ -1,4 +1,5 @@
 import { HMAC_KEY } from "$env/static/private";
+import { clients } from "$lib/server/clients";
 import { error } from "@sveltejs/kit";
 import { ArkErrors } from "arktype";
 import { createHmac } from "crypto";
@@ -18,8 +19,15 @@ export const POST: RequestHandler = async ({ request }) => {
   if (hmacResult !== hash) error(403);
 
   switch (data.message_type) {
-    case "verification":
+    //   case "verification":
+    //   case "ping": {
+    //     break;
+    //   }
+    // }
     case "ping": {
+      clients.forEach((emit) => {
+        emit("message", `Webhook: ${Date.now()}`);
+      });
       break;
     }
   }
